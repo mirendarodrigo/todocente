@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDocente</title>
+    <link rel="icon" href="img/fav.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+
+<body>
+    <div class="global">
+        <div class="headerBkg">
+            <header class="title">
+                <img src="/img/ToDocente Banner.png" alt="Banner">
+            </header>
+        </div>
+
+        <div class="firstPage">
+            <button type="button" id="botonPrincipal">Agregar tarea </button>
+            <div class="columns" id="taskColumns">
+
+                <div class="toDo">
+                    <div class="tskContent">
+                        <header class="encabezadoCol todoCol"> <h2> Por hacer... </h2><i><img src="/img/Iconos/todo.png" alt="To Do Icon"></i></header>
+
+                        <ul id="firstColumn"></ul>
+                        
+                    </div>
+
+                </div>
+                <div class="doing">
+                    <header class="encabezadoCol doingCol"><h2>Haciendo...</h2>  <i> <img src="/img/Iconos/doing.png" alt="Doing Icon"></i></header>
+                    <ul id="secondColumn"></ul>
+
+                </div>
+                <div class="done">
+                    <header class="encabezadoCol doneCol"><h2>Terminado!!!</h2>  <i><img src="/img/Iconos/done.png" alt="Done image"></i></header>
+                    <ul id="thirdColumn"></ul>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    </div>
+    <div class="modalContent hidden" id="modal">
+        <div class="modalForm">
+            <form>
+                <div class="contentCat">
+                    <select required class="cat" name="categoria" id="categorias">
+                        <option value="" disabled selected>Categoria</option>
+                        <option value="correccion">Corregir</option>
+                        <option value="planificacion">Planificar</option>
+                        <option value="reunion">Reunión</option>
+                        <option value="documentacion">Documentación</option>
+                        <option value="otro">Otro...</option>
+                    </select>
+                </div>
+
+                <div class="contentSub">
+                    <select required class="cat" name="subcat" id="subCat">
+                        <option value="" disabled selected>Subcategoria</option>
+                    </select>
+
+                    <input type="text" class="cat" name="subCat" placeholder="Detalle" id="otro" style="display: none;">
+
+                </div>
+
+                <input class="cat" type="text" name="institucion" id="institucion" placeholder="Institución">
+                <input class="cat" type="text" name="curso" id="curso" placeholder="Curso">
+                <input class="cat" type="text" name="comentario" id="comentario" placeholder="Comentario">
+
+                <div class="buttons">
+                    <button type="button" class="cancel" id="cancel">Cancelar</button>
+                    <button type="button" class="add" id="add">Agregar</button>
+                </div>
+
+            </form>
+        </div>
+        <script src="script.js"></script>
+</body>
+
+</html>
