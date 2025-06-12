@@ -363,7 +363,7 @@ strong {
  .todoCol::before{
    
     content: '';
-    background-image: url("/img/redbkg.png");
+    background-image: url("./img/redbkg.png");
     background-size: cover;
     background-position: center;
     position: absolute;
@@ -379,7 +379,7 @@ strong {
  
  .doingCol::before{
      content: '';
-    background-image: url("/img/yellowbkg.png");
+    background-image: url("./img/yellowbkg.png");
     background-size: cover;
     background-position: center;
     position: absolute;
@@ -393,7 +393,7 @@ strong {
 }
 .doneCol::before{
      content: '';
-    background-image: url("/img/greenbkg.png");
+    background-image: url("./img/greenbkg.png");
     background-size: cover;
     background-position: center;
     position: absolute;
