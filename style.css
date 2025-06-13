@@ -72,7 +72,7 @@ body {
 
 #botonPrincipal {
     background-color: var(--color-principal);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Nunito', Tahoma, Geneva, Verdana, sans-serif;
     ;
     font-weight: bold;
     color: white;
@@ -314,6 +314,7 @@ i {
 
 strong {
     color: var(--color-secundario);
+    font-family: "Nunito" sans-serif;
 }
 
 .dropDown {
