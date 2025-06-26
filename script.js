@@ -30,7 +30,7 @@ const recuperado = JSON.parse(read);
 const editIcon = document.getElementById("editIcon");
 
 //back
-const toDocenteBack = "https://todocentebackend.onrender.com"; 
+const toDocenteBack = "https://todocentebackend.onrender.com/api/tareas";
 const usuarioLocal = JSON.parse(localStorage.getItem("todocenteUser"));
 let usuarioRegistrado = false;
 let registroId = null;
@@ -41,6 +41,11 @@ if (usuarioLocal && usuarioLocal.uid) {
 } else {
     usuarioRegistrado = false;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  cargarTareas();
+});
+
 
 mainBtn.addEventListener("click", () => {
     modal.classList.remove("hidden");
@@ -267,23 +272,21 @@ function crearTarjeta() {
 }
 
 function eliminarTarea(tarjeta) {
-  const idTarea = parseInt(tarjeta.dataset.id);
+  const idTarea = tarjeta.dataset.id;
   tarjeta.remove();
 
-  const indice = toSave.findIndex(t => t.id === idTarea);
+  const indice = toSave.findIndex(t => (t.id == idTarea || t._id == idTarea));
   if (indice !== -1) {
     const tareaEliminada = toSave[indice];
     toSave.splice(indice, 1);
 
-    if (usuarioRegistrado) {
-      deleteTaskFromBackend(tareaEliminada.id);
+    if (usuarioRegistrado && tareaEliminada._id) {
+      deleteTaskFromBackend(tareaEliminada._id);
     } else {
       localStorage.setItem("saved", JSON.stringify(toSave));
     }
   }
 }
-
-
 
 function crearTarjetaDesdeDatos(tareaObjeto) {
     const tarjeta = document.createElement("li");
@@ -301,15 +304,17 @@ function crearTarjetaDesdeDatos(tareaObjeto) {
         <button><i class="fa-solid fa-arrow-right derIcon"></i></button>
         <button><i class="fa-regular fa-trash-can deleteIcon"></i></button>
         </div>`;
+
     tarjeta.querySelector(".deleteIcon").addEventListener("click", () => { eliminarTarea(tarjeta) });
     tarjeta.querySelector(".editIcon").addEventListener("click", () => editarTarea(tarjeta));
-    tarjeta.querySelector(".izqIcon").addEventListener("click", () => moverTarea(tarjeta, "izquierda"))
-    tarjeta.querySelector(".derIcon").addEventListener("click", () => moverTarea(tarjeta, "derecha"))
+    tarjeta.querySelector(".izqIcon").addEventListener("click", () => moverTarea(tarjeta, "izquierda"));
+    tarjeta.querySelector(".derIcon").addEventListener("click", () => moverTarea(tarjeta, "derecha"));
 
-    tarjeta.dataset.id = tareaObjeto.id;
+    tarjeta.dataset.id = tareaObjeto.id || tareaObjeto._id;
 
     return tarjeta;
 }
+
 
 function revisarColumnas() {
     const tareas = taskColumn.querySelectorAll(".columns ul li");
@@ -420,6 +425,7 @@ async function deleteTaskFromBackend(tareaId) {
 }
 
 async function cargarTareas() {
+    
   toSave.length = 0; 
   let tareas = [];
 
