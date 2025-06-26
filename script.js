@@ -29,17 +29,17 @@ const read = localStorage.getItem("saved");
 const recuperado = JSON.parse(read);
 const editIcon = document.getElementById("editIcon");
 
+//back
+const toDocenteBack = "https://todocentebackend.onrender.com"; 
+const usuarioLocal = JSON.parse(localStorage.getItem("todocenteUser"));
+let usuarioRegistrado = false;
+let registroId = null;
 
-if (recuperado) {
-    recuperado.forEach(t => {
-        const tarjeta = crearTarjetaDesdeDatos(t);
-        acomodarTarea(tarjeta,t.estado);
-        tarjeta.querySelector(".deleteIcon").addEventListener("click", () => { eliminarTarea(tarjeta) });
-        toSave.push(t);
-        taskColumn.classList.remove("hidden");
-    });
-   
-
+if (usuarioLocal && usuarioLocal.uid) {
+    usuarioRegistrado = true;
+    registroId = usuarioLocal.uid;
+} else {
+    usuarioRegistrado = false;
 }
 
 mainBtn.addEventListener("click", () => {
@@ -154,67 +154,65 @@ function normalizarFormulario() {
 
 }
 
-function agregarTarea() {
-
+async function agregarTarea() {
     const editandoId = modal.dataset.editandoId;
     if (editandoId) {
         const index = toSave.findIndex(t => t.id == editandoId);
         if (index !== -1) {
             const tareaObjeto = toSave[index];
-
             tareaObjeto.categoria = selectCat.value;
             tareaObjeto.subcategoria = selectCat.value === "otro" ? otrosInput.value : selectSub.value;
             tareaObjeto.institucion = instInput.value;
             tareaObjeto.curso = cursoInput.value;
             tareaObjeto.comentario = comentarioInput.value;
 
+            
             toSave[index] = tareaObjeto;
             localStorage.setItem("saved", JSON.stringify(toSave));
 
-             toSave[index] = tareaObjeto;
-        localStorage.setItem("saved", JSON.stringify(toSave));
+           
+            const tarjetaVieja = document.querySelector(`[data-id="${editandoId}"]`);
+            if (tarjetaVieja) {
+                const nuevaTarjeta = crearTarjetaDesdeDatos(tareaObjeto);
+                tarjetaVieja.parentNode.replaceChild(nuevaTarjeta, tarjetaVieja);
+            }
 
-        
-        const tarjetaVieja = document.querySelector(`[data-id="${editandoId}"]`);
-        if (tarjetaVieja) {
-            const nuevaTarjeta = crearTarjetaDesdeDatos(tareaObjeto);
-            tarjetaVieja.parentNode.replaceChild(nuevaTarjeta, tarjetaVieja);
-        }
-
-        
-        resetForm();
-        modal.classList.add("hidden");
-        global.classList.remove("blur");
-        modal.dataset.editandoId = "";
-
-       
-        return;
-
+            resetForm();
+            modal.classList.add("hidden");
+            global.classList.remove("blur");
+            modal.dataset.editandoId = "";
             return;
         }
     }
 
-    if (!validarFormulario()) { return; }
-
+    if (!validarFormulario()) return;
     normalizarFormulario();
 
     const { tarjeta, tareaObjeto } = crearTarjeta();
 
     primerColumna.appendChild(tarjeta);
-
-    modal.classList.add("hidden");
     taskColumn.classList.remove("hidden");
+    modal.classList.add("hidden");
     global.classList.remove("blur");
+
+    moverTarea(tarjeta, tareaObjeto.estado);
+
+    if (usuarioRegistrado) {
+        
+        tareaObjeto.uid = registroId; 
+        const respuesta = await saveTaskToBackend(tareaObjeto);
+        if (respuesta && respuesta._id) {
+            tareaObjeto._id = respuesta._id; 
+        }
+    }
 
     toSave.push(tareaObjeto);
     localStorage.setItem("saved", JSON.stringify(toSave));
 
     resetForm();
-
-    modal.dataset.editandoId = ""
-    moverTarea(tarjeta,tareaObjeto.estado);
-
+    modal.dataset.editandoId = "";
 }
+
 
 function resetForm() {
     selectCat.value = "";
@@ -263,22 +261,28 @@ function crearTarjeta() {
     tarjeta.querySelector(".derIcon").addEventListener("click", () => moverTarea(tarjeta, "derecha"))
 
     tarjeta.dataset.id = tareaObjeto.id;
-    
-    
+
+
     return { tarjeta, tareaObjeto };
 }
 
 function eliminarTarea(tarjeta) {
-    const idTarea = parseInt(tarjeta.dataset.id);
-    tarjeta.remove();
+  const idTarea = parseInt(tarjeta.dataset.id);
+  tarjeta.remove();
 
-    const indice = toSave.findIndex(t => t.id === idTarea);
-    if (indice !== -1) {
-        toSave.splice(indice, 1);
-        localStorage.setItem("saved", JSON.stringify(toSave));
+  const indice = toSave.findIndex(t => t.id === idTarea);
+  if (indice !== -1) {
+    const tareaEliminada = toSave[indice];
+    toSave.splice(indice, 1);
+
+    if (usuarioRegistrado) {
+      deleteTaskFromBackend(tareaEliminada.id);
+    } else {
+      localStorage.setItem("saved", JSON.stringify(toSave));
     }
-   
+  }
 }
+
 
 
 function crearTarjetaDesdeDatos(tareaObjeto) {
@@ -335,14 +339,14 @@ function editarTarea(tarjeta) {
         selectSub.style.display = "block";
     }
     if (tarea.institucion === "--") {
-        instInput 
+        instInput
     } else { instInput.value = tarea.institucion; }
 
     if (tarea.curso === "--") {
         cursoInput;
     } else { cursoInput.value = tarea.curso; }
     if (tarea.comentario === "--") {
-        comentarioInput ;
+        comentarioInput;
     } else { comentarioInput.value = tarea.comentario; }
 
     modal.dataset.editandoId = tarea.id;
@@ -356,21 +360,81 @@ function acomodarTarea(tarjeta, estado) {
     } else { tercerColumna.appendChild(tarjeta); }
 }
 
-function moverTarea(tarjeta, direccion){
+function moverTarea(tarjeta, direccion) {
     const id = parseInt(tarjeta.dataset.id);
-    const tarea = toSave.find(t=> t.id===id) 
-    if(!tarea)return;
+    const tarea = toSave.find(t => t.id === id)
+    if (!tarea) return;
 
-    const status=["todo","doing","done"];
+    const status = ["todo", "doing", "done"];
     let indiceTarea = status.indexOf(tarea.estado);
 
-    if(direccion==="izquierda"&& indiceTarea > 0)
-    {indiceTarea--;}else if(direccion==="derecha"&& indiceTarea < status.length-1){
+    if (direccion === "izquierda" && indiceTarea > 0) { indiceTarea--; } else if (direccion === "derecha" && indiceTarea < status.length - 1) {
         indiceTarea++;
-    }else {return;}
+    } else { return; }
 
-    tarea.estado= status[indiceTarea];
+    tarea.estado = status[indiceTarea];
     localStorage.setItem("saved", JSON.stringify(toSave));
 
     acomodarTarea(tarjeta, tarea.estado);
+}
+
+
+async function fetchTasksFromBackend() {
+    try {
+        const response = await fetch(`${toDocenteBack}/${registroId}`);
+        if (!response.ok) throw new Error("Error al obtener tareas desde backend");
+        const tareas = await response.json();
+        return tareas;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+async function saveTaskToBackend(tareaObjeto) {
+    try {
+        const response = await fetch(toDocenteBack, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...tareaObjeto, userId: registroId }),
+        });
+        if (!response.ok) throw new Error("Error al guardar tarea en backend");
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+async function deleteTaskFromBackend(tareaId) {
+    try {
+        const response = await fetch(`${toDocenteBack}/${tareaId}?userId=${registroId}`, {
+            method: "DELETE",
+        });
+        if (!response.ok) throw new Error("Error al eliminar tarea en backend");
+        return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
+async function cargarTareas() {
+  toSave.length = 0; 
+  let tareas = [];
+
+  if (usuarioRegistrado) {
+    tareas = await fetchTasksFromBackend();
+  } else {
+    const read = localStorage.getItem("saved");
+    tareas = read ? JSON.parse(read) : [];
+  }
+
+  tareas.forEach(t => {
+    const tarjeta = crearTarjetaDesdeDatos(t);
+    acomodarTarea(tarjeta, t.estado);
+    tarjeta.querySelector(".deleteIcon").addEventListener("click", () => { eliminarTarea(tarjeta) });
+    toSave.push(t);
+    taskColumn.classList.remove("hidden");
+  });
 }
