@@ -42,7 +42,7 @@
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // Iniciar sesión
+  // Iniciar sesión con Google
   window.loginConGoogle = function () {
     signInWithPopup(auth, provider)
       .then((result) => {
@@ -54,7 +54,7 @@
           photo: user.photoURL
         }));
         actualizarVistaUsuario();
-        location.reload();
+        location.reload(); // recarga para usar MongoDB
       })
       .catch((error) => {
         console.error("Error en login:", error);
@@ -66,13 +66,14 @@
     signOut(auth)
       .then(() => {
         localStorage.removeItem("todocenteUser");
-        location.reload();
+        location.reload(); // vuelve al modo localStorage
       })
       .catch((error) => {
         console.error("Error al cerrar sesión:", error);
       });
   };
 
+  // Actualiza el contenido del contenedor según si el usuario está logueado
   function actualizarVistaUsuario() {
     const authBox = document.getElementById("authBox");
     const user = JSON.parse(localStorage.getItem("todocenteUser"));
@@ -80,9 +81,11 @@
     if (user) {
       authBox.innerHTML = `
         <div class="userInfo">
-          <strong>¡Hola, ${user.name}!</strong>
-          <img src="${user.photo}" alt="Foto de perfil">
-          <button onclick="logout()">Cerrar sesión</button>
+          <img src="${user.photo}" alt="Foto de perfil" class="userPhoto">
+          <div>
+            <strong>¡Hola, ${user.name}!</strong><br>
+            <button onclick="logout()">Cerrar sesión</button>
+          </div>
         </div>
       `;
     } else {
@@ -95,6 +98,7 @@
 
   actualizarVistaUsuario();
 </script>
+
 
 
 
