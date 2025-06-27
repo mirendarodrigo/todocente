@@ -24,65 +24,78 @@
     <meta name="twitter:image" content="https://mirendarodrigo.github.io/todocente/img/portada.png">
 
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+   <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithPopup, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBBBw_efaHZhDrFzP5ncX6x5vniLGlC8nk",
-            authDomain: "todocente.firebaseapp.com",
-            projectId: "todocente",
-            storageBucket: "todocente.firebasestorage.app",
-            messagingSenderId: "508907286234",
-            appId: "1:508907286234:web:46d8038ee8f14d8838bfe3",
-            measurementId: "G-X4MSLDG23Z"
-        };
+  const firebaseConfig = {
+    apiKey: "AIzaSyBBBw_efaHZhDrFzP5ncX6x5vniLGlC8nk",
+    authDomain: "todocente.firebaseapp.com",
+    projectId: "todocente",
+    storageBucket: "todocente.firebasestorage.app",
+    messagingSenderId: "508907286234",
+    appId: "1:508907286234:web:46d8038ee8f14d8838bfe3",
+    measurementId: "G-X4MSLDG23Z"
+  };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
-        window.loginConGoogle = function () {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    const user = result.user;
-                    localStorage.setItem("todocenteUser", JSON.stringify({
-                        name: user.displayName,
-                        email: user.email,
-                        uid: user.uid,
-                        photo: user.photoURL
-                    }));
-                    actualizarVistaUsuario();
-                    location.reload();
-                })
+  // Iniciar sesión
+  window.loginConGoogle = function () {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        localStorage.setItem("todocenteUser", JSON.stringify({
+          name: user.displayName,
+          email: user.email,
+          uid: user.uid,
+          photo: user.photoURL
+        }));
+        actualizarVistaUsuario();
+        location.reload();
+      })
+      .catch((error) => {
+        console.error("Error en login:", error);
+      });
+  };
 
-                .catch((error) => {
-                    console.error("Error en login:", error);
-                });
-        };
+  // Cerrar sesión
+  window.logout = function () {
+    signOut(auth)
+      .then(() => {
+        localStorage.removeItem("todocenteUser");
+        location.reload();
+      })
+      .catch((error) => {
+        console.error("Error al cerrar sesión:", error);
+      });
+  };
 
-        function actualizarVistaUsuario() {
-            const authBox = document.getElementById("authBox");
-            const user = JSON.parse(localStorage.getItem("todocenteUser"));
+  function actualizarVistaUsuario() {
+    const authBox = document.getElementById("authBox");
+    const user = JSON.parse(localStorage.getItem("todocenteUser"));
 
-            if (user) {
-                authBox.innerHTML = `
+    if (user) {
+      authBox.innerHTML = `
         <div class="userInfo">
           <strong>¡Hola, ${user.name}!</strong>
           <img src="${user.photo}" alt="Foto de perfil">
+          <button onclick="logout()">Cerrar sesión</button>
         </div>
       `;
-            } else {
-                authBox.innerHTML = `
+    } else {
+      authBox.innerHTML = `
         <p>Vinculá tu cuenta de Google para acceder desde cualquier dispositivo.</p>
         <button onclick="loginConGoogle()">Iniciar sesión con Google</button>
       `;
-            }
-        }
+    }
+  }
 
+  actualizarVistaUsuario();
+</script>
 
-        actualizarVistaUsuario();
-    </script>
 
 
 </head>

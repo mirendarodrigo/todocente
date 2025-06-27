@@ -464,7 +464,6 @@ async function cargarTareas() {
     }
 }
 
-
 async function actualizarBackend(tareaObjeto) {
     try {
         const response = await fetch(`${toDocenteBack}/${tareaObjeto._id}`, {
