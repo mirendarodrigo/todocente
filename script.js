@@ -163,6 +163,8 @@ async function agregarTarea() {
     const editandoId = modal.dataset.editandoId;
     if (editandoId) {
         const index = toSave.findIndex(t => t.id == editandoId);
+        
+
         if (index !== -1) {
             const tareaObjeto = toSave[index];
             tareaObjeto.categoria = selectCat.value;
@@ -175,6 +177,9 @@ async function agregarTarea() {
             toSave[index] = tareaObjeto;
             localStorage.setItem("saved", JSON.stringify(toSave));
 
+            if (usuarioRegistrado && tareaObjeto._id) {
+            await actualizarBackend(tareaObjeto);
+        }
 
             const tarjetaVieja = document.querySelector(`[data-id="${editandoId}"]`);
             if (tarjetaVieja) {
@@ -324,8 +329,8 @@ function revisarColumnas() {
 }
 
 function editarTarea(tarjeta) {
-    const id = parseInt(tarjeta.dataset.id);
-    const tarea = toSave.find(t => t.id === id);
+    const id = tarjeta.dataset.id;
+    const tarea = toSave.find(t => t.id == id);
     if (!tarea) return;
 
     modal.classList.remove("hidden");
@@ -365,22 +370,25 @@ function acomodarTarea(tarjeta, estado) {
     } else { tercerColumna.appendChild(tarjeta); }
 }
 
-function moverTarea(tarjeta, direccion) {
-    const id = parseInt(tarjeta.dataset.id);
-    const tarea = toSave.find(t => t.id === id)
+async function moverTarea(tarjeta, direccion) {
+    const id = tarjeta.dataset.id;
+    const tarea = toSave.find(t => t.id == id);
     if (!tarea) return;
 
     const status = ["todo", "doing", "done"];
     let indiceTarea = status.indexOf(tarea.estado);
 
-    if (direccion === "izquierda" && indiceTarea > 0) { indiceTarea--; } else if (direccion === "derecha" && indiceTarea < status.length - 1) {
-        indiceTarea++;
-    } else { return; }
+    if (direccion === "izquierda" && indiceTarea > 0) { indiceTarea--; }
+    else if (direccion === "derecha" && indiceTarea < status.length - 1) { indiceTarea++; }
+    else { return; }
 
     tarea.estado = status[indiceTarea];
+    acomodarTarea(tarjeta, tarea.estado);
     localStorage.setItem("saved", JSON.stringify(toSave));
 
-    acomodarTarea(tarjeta, tarea.estado);
+    if (usuarioRegistrado && tarea._id) {
+        await actualizarBackend(tarea);
+    }
 }
 
 
@@ -425,7 +433,6 @@ async function deleteTaskFromBackend(tareaId) {
 }
 
 async function cargarTareas() {
-
     toSave.length = 0;
     let tareas = [];
 
@@ -437,11 +444,38 @@ async function cargarTareas() {
     }
 
     tareas.forEach(t => {
-        t.id = t._id;
+        t.id = t._id || t.id;
+
+       
+        if (!["todo", "doing", "done"].includes(t.estado)) {
+            t.estado = "todo"; 
+        }
+
         const tarjeta = crearTarjetaDesdeDatos(t);
         acomodarTarea(tarjeta, t.estado);
         tarjeta.querySelector(".deleteIcon").addEventListener("click", () => { eliminarTarea(tarjeta) });
         toSave.push(t);
         taskColumn.classList.remove("hidden");
     });
+
+    
+    if (!usuarioRegistrado) {
+        localStorage.setItem("saved", JSON.stringify(toSave));
+    }
+}
+
+
+async function actualizarBackend(tareaObjeto) {
+    try {
+        const response = await fetch(`${toDocenteBack}/${tareaObjeto._id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(tareaObjeto),
+        });
+        if (!response.ok) throw new Error("Error al actualizar tarea en backend");
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
 }
