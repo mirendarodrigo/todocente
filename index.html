@@ -53,7 +53,9 @@
                         photo: user.photoURL
                     }));
                     actualizarVistaUsuario();
+                    location.reload();
                 })
+
                 .catch((error) => {
                     console.error("Error en login:", error);
                 });
@@ -95,42 +97,42 @@
 
             </div>
 
-                    
 
-        <div class="firstPage">
-            <button type="button" id="botonPrincipal">Agregar tarea </button>
-            <div class="columns" id="taskColumns">
 
-                <div class="toDo">
-                    <div class="tskContent">
-                        <header class="encabezadoCol todoCol">
-                            <h2> Por hacer... </h2><i><img src="./img/Iconos/todo.png" alt="To Do Icon"></i>
-                        </header>
+            <div class="firstPage">
+                <button type="button" id="botonPrincipal">Agregar tarea </button>
+                <div class="columns" id="taskColumns">
 
-                        <ul id="firstColumn"></ul>
+                    <div class="toDo">
+                        <div class="tskContent">
+                            <header class="encabezadoCol todoCol">
+                                <h2> Por hacer... </h2><i><img src="./img/Iconos/todo.png" alt="To Do Icon"></i>
+                            </header>
+
+                            <ul id="firstColumn"></ul>
+
+                        </div>
 
                     </div>
+                    <div class="doing">
+                        <header class="encabezadoCol doingCol">
+                            <h2>Haciendo...</h2> <i> <img src="./img/Iconos/doing.png" alt="Doing Icon"></i>
+                        </header>
+                        <ul id="secondColumn"></ul>
 
-                </div>
-                <div class="doing">
-                    <header class="encabezadoCol doingCol">
-                        <h2>Haciendo...</h2> <i> <img src="./img/Iconos/doing.png" alt="Doing Icon"></i>
-                    </header>
-                    <ul id="secondColumn"></ul>
+                    </div>
+                    <div class="done">
+                        <header class="encabezadoCol doneCol">
+                            <h2>Terminado!!!</h2> <i><img src="./img/Iconos/done.png" alt="Done image"></i>
+                        </header>
+                        <ul id="thirdColumn"></ul>
 
+                    </div>
                 </div>
-                <div class="done">
-                    <header class="encabezadoCol doneCol">
-                        <h2>Terminado!!!</h2> <i><img src="./img/Iconos/done.png" alt="Done image"></i>
-                    </header>
-                    <ul id="thirdColumn"></ul>
 
-                </div>
             </div>
 
         </div>
-
-    </div>
 
     </div>
     <div class="modalContent hidden" id="modal">

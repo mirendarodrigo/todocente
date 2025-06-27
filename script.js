@@ -43,7 +43,7 @@ if (usuarioLocal && usuarioLocal.uid) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarTareas();
+    cargarTareas();
 });
 
 
@@ -171,11 +171,11 @@ async function agregarTarea() {
             tareaObjeto.curso = cursoInput.value;
             tareaObjeto.comentario = comentarioInput.value;
 
-            
+
             toSave[index] = tareaObjeto;
             localStorage.setItem("saved", JSON.stringify(toSave));
 
-           
+
             const tarjetaVieja = document.querySelector(`[data-id="${editandoId}"]`);
             if (tarjetaVieja) {
                 const nuevaTarjeta = crearTarjetaDesdeDatos(tareaObjeto);
@@ -203,11 +203,11 @@ async function agregarTarea() {
     moverTarea(tarjeta, tareaObjeto.estado);
 
     if (usuarioRegistrado) {
-        
-        tareaObjeto.uid = registroId; 
+
+        tareaObjeto.uid = registroId;
         const respuesta = await saveTaskToBackend(tareaObjeto);
         if (respuesta && respuesta._id) {
-            tareaObjeto._id = respuesta._id; 
+            tareaObjeto._id = respuesta._id;
         }
     }
 
@@ -272,20 +272,20 @@ function crearTarjeta() {
 }
 
 function eliminarTarea(tarjeta) {
-  const idTarea = tarjeta.dataset.id;
-  tarjeta.remove();
+    const idTarea = tarjeta.dataset.id;
+    tarjeta.remove();
 
-  const indice = toSave.findIndex(t => (t.id == idTarea || t._id == idTarea));
-  if (indice !== -1) {
-    const tareaEliminada = toSave[indice];
-    toSave.splice(indice, 1);
+    const indice = toSave.findIndex(t => (t.id == idTarea || t._id == idTarea));
+    if (indice !== -1) {
+        const tareaEliminada = toSave[indice];
+        toSave.splice(indice, 1);
 
-    if (usuarioRegistrado && tareaEliminada._id) {
-      deleteTaskFromBackend(tareaEliminada._id);
-    } else {
-      localStorage.setItem("saved", JSON.stringify(toSave));
+        if (usuarioRegistrado && tareaEliminada._id) {
+            deleteTaskFromBackend(tareaEliminada._id);
+        } else {
+            localStorage.setItem("saved", JSON.stringify(toSave));
+        }
     }
-  }
 }
 
 function crearTarjetaDesdeDatos(tareaObjeto) {
@@ -425,22 +425,23 @@ async function deleteTaskFromBackend(tareaId) {
 }
 
 async function cargarTareas() {
-    
-  toSave.length = 0; 
-  let tareas = [];
 
-  if (usuarioRegistrado) {
-    tareas = await fetchTasksFromBackend();
-  } else {
-    const read = localStorage.getItem("saved");
-    tareas = read ? JSON.parse(read) : [];
-  }
+    toSave.length = 0;
+    let tareas = [];
 
-  tareas.forEach(t => {
-    const tarjeta = crearTarjetaDesdeDatos(t);
-    acomodarTarea(tarjeta, t.estado);
-    tarjeta.querySelector(".deleteIcon").addEventListener("click", () => { eliminarTarea(tarjeta) });
-    toSave.push(t);
-    taskColumn.classList.remove("hidden");
-  });
+    if (usuarioRegistrado) {
+        tareas = await fetchTasksFromBackend();
+    } else {
+        const read = localStorage.getItem("saved");
+        tareas = read ? JSON.parse(read) : [];
+    }
+
+    tareas.forEach(t => {
+        t.id = t._id;
+        const tarjeta = crearTarjetaDesdeDatos(t);
+        acomodarTarea(tarjeta, t.estado);
+        tarjeta.querySelector(".deleteIcon").addEventListener("click", () => { eliminarTarea(tarjeta) });
+        toSave.push(t);
+        taskColumn.classList.remove("hidden");
+    });
 }
